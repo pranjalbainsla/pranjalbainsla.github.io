@@ -1,0 +1,9 @@
+[
+  {
+    "name": "FlashAttention from scratch",
+    "description": "A learning repo where I rebuild FlashAttention step by step: tiling, the online softmax trick, and the memory math that makes attention fast.",
+    "tags": ["CUDA", "attention", "GPU"],
+    "link": "https://github.com/pranjalbainsla/flashattention-from-scratch"
+  }
+
+]

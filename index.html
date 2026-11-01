@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Under construction</title>
+  <meta name="description" content="A tiny toy-block hacker's room. Walk to the computer to open my projects." />
+  <meta name="theme-color" content="#f6cfd8" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect width='8' height='8' fill='%23f6cfd8'/%3E%3Crect x='1' y='1' width='6' height='5' fill='%23241b3a'/%3E%3Crect x='2' y='4' width='2' height='1' fill='%2339ff7a'/%3E%3Crect x='3' y='6' width='2' height='1' fill='%23c9b8e8'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/style.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three.module.min.js",
+        "three/addons/geometries/RoundedBoxGeometry.js": "./vendor/RoundedBoxGeometry.js",
+        "three/addons/postprocessing/EffectComposer.js": "./vendor/postprocessing/EffectComposer.js",
+        "three/addons/postprocessing/RenderPass.js": "./vendor/postprocessing/RenderPass.js",
+        "three/addons/postprocessing/GTAOPass.js": "./vendor/postprocessing/GTAOPass.js",
+        "three/addons/postprocessing/UnrealBloomPass.js": "./vendor/postprocessing/UnrealBloomPass.js",
+        "three/addons/postprocessing/ShaderPass.js": "./vendor/postprocessing/ShaderPass.js",
+        "three/addons/postprocessing/OutputPass.js": "./vendor/postprocessing/OutputPass.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <canvas id="scene" aria-label="A 3D toy diorama of a cozy hacker's room"></canvas>
+
+  <header class="title-card">
+    <h1 class="pixel-title" aria-label="Under construction">
+      <span>Under</span><span>construction</span>
+    </h1>
+    <p class="subtitle">
+      <span class="hint-keys">Walk to the computer and press Enter to open my projects.</span>
+      <span class="hint-touch">Walk to the computer, then tap A.</span>
+    </p>
+  </header>
+
+  <aside class="help" aria-label="Controls">
+    <span><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> walk</span>
+    <span><kbd>Enter</kbd> use</span>
+    <button id="sound-toggle" class="pixel-btn small" type="button" aria-pressed="false" title="Toggle sound">Sound off</button>
+  </aside>
+
+  <nav class="weather-bar" aria-label="Weather outside the window">
+    <button class="pixel-btn weather" data-weather="sunny" type="button" aria-pressed="true"><i data-icon="sunny"></i>Sunny</button>
+    <button class="pixel-btn weather" data-weather="rain" type="button" aria-pressed="false"><i data-icon="rain"></i>Rain + Thunder</button>
+    <button class="pixel-btn weather" data-weather="snow" type="button" aria-pressed="false"><i data-icon="snow"></i>Snow</button>
+    <button class="pixel-btn weather" data-weather="autumn" type="button" aria-pressed="false"><i data-icon="autumn"></i>Autumn leaves</button>
+    <button class="pixel-btn weather" data-weather="night" type="button" aria-pressed="false"><i data-icon="night"></i>Night</button>
+  </nav>
+
+  <div id="prompt" class="prompt" hidden></div>
+
+  <div id="dialogue" class="dialogue" role="status" aria-live="polite" hidden>
+    <div class="dialogue-name" id="dialogue-name"></div>
+    <p class="dialogue-text" id="dialogue-text"></p>
+    <span class="dialogue-next">Enter ▾</span>
+  </div>
+
+  <div id="terminals" class="terminals" aria-live="polite"></div>
+
+  <div class="touch-controls" id="touch-controls" aria-hidden="true">
+    <div class="dpad">
+      <button data-dir="up" class="pad up" type="button">▲</button>
+      <button data-dir="left" class="pad left" type="button">◀</button>
+      <button data-dir="right" class="pad right" type="button">▶</button>
+      <button data-dir="down" class="pad down" type="button">▼</button>
+    </div>
+    <button id="action-btn" class="action" type="button">A</button>
+  </div>
+
+  <div id="loader" class="loader">
+    <p>booting room<span class="blink">_</span></p>
+  </div>
+
+  <noscript><p class="noscript">This little room needs JavaScript and WebGL to load.</p></noscript>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
