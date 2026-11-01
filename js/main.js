@@ -23,7 +23,10 @@ try {
   document.getElementById('loader').innerHTML = '<p>This room needs WebGL. Try another browser?</p>';
   throw err;
 }
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, isTouch ? 1.5 : 1.75));
+// Upper bound for the pixel ratio. The frame-time monitor in frame() steps it down on slow GPUs.
+let maxDpr = isTouch ? 1.5 : 1.75;
+const MIN_DPR = 1.25;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxDpr));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.NeutralToneMapping;
 renderer.toneMappingExposure = 1.22;
@@ -55,6 +58,7 @@ function resize() {
   camera.lookAt(camTarget);
   camera.translateY(shift);
   camera.updateProjectionMatrix();
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxDpr));
   renderer.setSize(w, h, false);
   if (composer) {
     composer.setPixelRatio(renderer.getPixelRatio());
@@ -79,19 +83,28 @@ Object.assign(sun.shadow.camera, { left: -9, right: 9, top: 9, bottom: -9, near:
 sun.shadow.bias = -0.0006;
 sun.shadow.normalBias = 0.025;
 sun.shadow.radius = 3;
+// The shadow map is only re-rendered when the character or the sun moves (see frame()).
+sun.shadow.autoUpdate = false;
+sun.shadow.needsUpdate = true;
 
 // ---------- Post-processing: contact shadows, bloom, grade ----------
 // Rendered into an MSAA half-float target so the AO/bloom chain stays smooth and anti-aliased.
+// At high pixel ratios 2 samples are visually the same as 4 and much cheaper to resolve.
 let composer = null;
 let gtao = null;
 function setupPost() {
-  const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: isTouch ? 0 : 4 });
+  const msaa = isTouch ? 0 : renderer.getPixelRatio() >= 1.5 ? 2 : 4;
+  const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: msaa });
   composer = new EffectComposer(renderer, target);
   composer.addPass(new RenderPass(scene, camera));
   if (!isTouch) {
     gtao = new GTAOPass(scene, camera, window.innerWidth, window.innerHeight);
     gtao.updateGtaoMaterial({ radius: 0.7, distanceExponent: 1.4, thickness: 1.2, scale: 0.9, samples: 16, distanceFallOff: 1, screenSpaceRadius: false });
-    gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 16 });
+    // AO is smooth, so it runs at half resolution (same sample counts, a quarter of the pixels) and is
+    // cached until something that can change it moves. The denoise radius is in AO-buffer pixels.
+    gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 3, rings: 2, samples: 16 });
+    gtao.resolutionScale = 0.5;
+    gtao.cacheAO = true;
     gtao.blendIntensity = 1.0;
     composer.addPass(gtao);
   }
@@ -302,7 +315,65 @@ const RIGHT = new THREE.Vector2(Math.SQRT1_2, -Math.SQRT1_2); // screen-right, o
 let started = false;
 let lastBg = -1;
 
-function frame() {
+// ---------- Frame pacing ----------
+// Active (moving / weather particles): cap at ~60 fps, which also halves the work on 120 Hz displays.
+// Idle (nothing but steam, dust and the cursor): 30 fps is indistinguishable and keeps the GPU cool.
+const ACTIVE_MS = 14.5;
+const IDLE_MS = 31;
+let idle = false;
+let lastRender = 0;
+let frameNo = 0;
+
+// Change detection for the cached shadow map and AO.
+const pose = new Float32Array(5);
+const lastPose = new Float32Array(5);
+const lastSun = new THREE.Vector3(NaN);
+let lastSill = -1;
+let aoStale = true;
+function poseChanged() {
+  pose[0] = player.pos.x; pose[1] = player.pos.y; pose[2] = player.heading; pose[3] = player.moving; pose[4] = player.walk;
+  let changed = false;
+  for (let i = 0; i < 5; i++) {
+    if (Math.abs(pose[i] - lastPose[i]) > 1e-5) changed = true;
+    lastPose[i] = pose[i];
+  }
+  return changed;
+}
+
+// Adaptive quality: if sustained active frames are slow, trade a little pixel ratio for smoothness.
+let perfSum = 0, perfN = 0, lastTick = 0;
+function trackPerf(now) {
+  if (idle || now < 4000) { perfSum = perfN = lastTick = 0; return; } // skip startup / shader compile
+  if (lastTick) {
+    const d = now - lastTick;
+    if (d < 100) { perfSum += d; perfN++; } else { perfSum = perfN = 0; } // tab switch or hitch
+  }
+  lastTick = now;
+  if (perfN >= 90) {
+    const avg = perfSum / perfN;
+    perfSum = perfN = 0;
+    if (avg > 24 && maxDpr > MIN_DPR) {
+      maxDpr = Math.max(MIN_DPR, maxDpr - 0.25);
+      console.info(`Frames averaging ${avg.toFixed(1)} ms; pixel ratio cap -> ${maxDpr}`);
+      resize();
+    }
+  }
+}
+
+// Optional FPS readout: add ?fps to the URL.
+let fpsEl = null, fpsFrames = 0, fpsSince = 0;
+if (new URLSearchParams(location.search).has('fps')) {
+  fpsEl = document.createElement('div');
+  fpsEl.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:99;font:12px/1.4 monospace;color:#fff;background:rgba(0,0,0,.6);padding:4px 8px;border-radius:6px;pointer-events:none';
+  document.body.appendChild(fpsEl);
+}
+
+function frame(now = performance.now()) {
+  requestAnimationFrame(frame);
+  if (now - lastRender < (idle ? IDLE_MS : ACTIVE_MS)) return;
+  lastRender = now;
+  frameNo++;
+
   const dt = Math.min(clock.getDelta(), 0.05);
   const t = clock.elapsedTime;
 
@@ -319,7 +390,33 @@ function frame() {
   animateSteam(t);
   room.refs.led.visible = Math.sin(t * 6) > -0.3;
 
+  // Re-render the shadow map / AO only when the character, the sun or (autumn) the leaves changed.
+  const moved = poseChanged();
+  const sillY = room.refs.sillSnow.scale.y;
+  const sunMoved = !(lastSun.distanceToSquared(sun.position) < 1e-8); // also true while lastSun is NaN
+  const sillMoved = Math.abs(sillY - lastSill) > 1e-4;
+  lastSun.copy(sun.position);
+  lastSill = sillY;
+  if (moved || sunMoved) sun.shadow.needsUpdate = true;
+  if (gtao) {
+    if (moved || sillMoved) aoStale = true;
+    if (aoStale && (frameNo & 1) === 0) { gtao.aoDirty = true; aoStale = false; } // AO at half the frame rate while moving
+    if (weather.leaves.visible) gtao.aoDirty = true;
+  }
+  const ws = weather.state;
+  idle = !moved && !sunMoved && !sillMoved && !(input.up || input.down || input.left || input.right) &&
+    ws.rain < 0.01 && ws.snow < 0.01 && ws.leaves < 0.01 && weather.flash < 0.01;
+
   composer.render(dt);
+  trackPerf(now);
+  if (fpsEl) {
+    fpsFrames++;
+    if (now - fpsSince > 500) {
+      fpsEl.textContent = `${Math.round((fpsFrames * 1000) / (now - fpsSince))} fps · dpr ${renderer.getPixelRatio()}${idle ? ' · idle' : ''}`;
+      fpsFrames = 0;
+      fpsSince = now;
+    }
+  }
   placePrompt();
   if (((t * 4) | 0) !== lastBg) { lastBg = (t * 4) | 0; document.body.style.background = `#${scene.background.getHexString()}`; }
 
@@ -327,7 +424,6 @@ function frame() {
     started = true;
     document.getElementById('loader').classList.add('gone');
   }
-  requestAnimationFrame(frame);
 }
 
 function animateSteam(t) {

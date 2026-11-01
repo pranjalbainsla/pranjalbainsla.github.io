@@ -42,6 +42,12 @@ class GTAOPass extends Pass {
 		this._visibilityCache = new Map();
 		this.blendIntensity = 1.;
 
+		// local patch: AO is low-frequency, so it renders (G-buffer, AO, denoise) at a fraction of the
+		// output resolution, and can reuse the last result while nothing in the scene has moved.
+		this.resolutionScale = 1.;
+		this.cacheAO = false;
+		this.aoDirty = true;
+
 		this.pdRings = 2.;
 		this.pdRadiusExponent = 2.;
 		this.pdSamples = 16;
@@ -337,9 +343,12 @@ class GTAOPass extends Pass {
 
 	render( renderer, writeBuffer, readBuffer /*, deltaTime, maskActive */ ) {
 
+		const recompute = ! this.cacheAO || this.aoDirty;
+		this.aoDirty = false;
+
 		// render normals and depth (honor only meshes, points and lines do not contribute to AO)
 
-		if ( this._renderGBuffer ) {
+		if ( recompute && this._renderGBuffer ) {
 
 			this.overrideVisibility();
 			this.renderOverride( renderer, this.normalMaterial, this.normalRenderTarget, 0x7777ff, 1.0 );
@@ -347,19 +356,23 @@ class GTAOPass extends Pass {
 
 		}
 
-		// render AO
+		if ( recompute ) {
 
-		this.gtaoMaterial.uniforms.cameraNear.value = this.camera.near;
-		this.gtaoMaterial.uniforms.cameraFar.value = this.camera.far;
-		this.gtaoMaterial.uniforms.cameraProjectionMatrix.value.copy( this.camera.projectionMatrix );
-		this.gtaoMaterial.uniforms.cameraProjectionMatrixInverse.value.copy( this.camera.projectionMatrixInverse );
-		this.gtaoMaterial.uniforms.cameraWorldMatrix.value.copy( this.camera.matrixWorld );
-		this.renderPass( renderer, this.gtaoMaterial, this.gtaoRenderTarget, 0xffffff, 1.0 );
+			// render AO
 
-		// render poisson denoise
+			this.gtaoMaterial.uniforms.cameraNear.value = this.camera.near;
+			this.gtaoMaterial.uniforms.cameraFar.value = this.camera.far;
+			this.gtaoMaterial.uniforms.cameraProjectionMatrix.value.copy( this.camera.projectionMatrix );
+			this.gtaoMaterial.uniforms.cameraProjectionMatrixInverse.value.copy( this.camera.projectionMatrixInverse );
+			this.gtaoMaterial.uniforms.cameraWorldMatrix.value.copy( this.camera.matrixWorld );
+			this.renderPass( renderer, this.gtaoMaterial, this.gtaoRenderTarget, 0xffffff, 1.0 );
 
-		this.pdMaterial.uniforms.cameraProjectionMatrixInverse.value.copy( this.camera.projectionMatrixInverse );
-		this.renderPass( renderer, this.pdMaterial, this.pdRenderTarget, 0xffffff, 1.0 );
+			// render poisson denoise
+
+			this.pdMaterial.uniforms.cameraProjectionMatrixInverse.value.copy( this.camera.projectionMatrixInverse );
+			this.renderPass( renderer, this.pdMaterial, this.pdRenderTarget, 0xffffff, 1.0 );
+
+		}
 
 		// output result to screen
 
@@ -490,6 +503,11 @@ class GTAOPass extends Pass {
 
 		this.width = width;
 		this.height = height;
+		this.aoDirty = true;
+
+		// AO buffers run at resolutionScale; the blend pass upsamples the denoised result.
+		width = Math.max( 1, Math.round( width * this.resolutionScale ) );
+		height = Math.max( 1, Math.round( height * this.resolutionScale ) );
 
 		this.gtaoRenderTarget.setSize( width, height );
 		this.normalRenderTarget.setSize( width, height );
