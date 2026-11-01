@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Under construction</title>
+  <title>Hi, I'm Pranjal</title>
   <meta name="description" content="A tiny toy-block hacker's room. Walk to the computer to open my projects." />
   <meta name="theme-color" content="#f6cfd8" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect width='8' height='8' fill='%23f6cfd8'/%3E%3Crect x='1' y='1' width='6' height='5' fill='%23241b3a'/%3E%3Crect x='2' y='4' width='2' height='1' fill='%2339ff7a'/%3E%3Crect x='3' y='6' width='2' height='1' fill='%23c9b8e8'/%3E%3C/svg%3E" />
@@ -30,27 +30,24 @@
   <canvas id="scene" aria-label="A 3D toy diorama of a cozy hacker's room"></canvas>
 
   <header class="title-card">
-    <h1 class="pixel-title" aria-label="Under construction">
-      <span>Under</span><span>construction</span>
+    <h1 class="pixel-title" aria-label="Hi, I'm Pranjal">
+      <span>hello</span><span>I'm pranjal</span>
     </h1>
-    <p class="subtitle">
-      <span class="hint-keys">Walk to the computer and press Enter to open my projects.</span>
-      <span class="hint-touch">Walk to the computer, then tap A.</span>
+    <p class="subtitle">Welcome to my little corner of the internet!</p>
+    <p class="wip">...under construction</p>
+    <p class="links">
+      <a href="https://github.com/pranjalbainsla" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"><i data-icon="github"></i></a>
+      <a href="mailto:pranjalbainsla@gmail.com" aria-label="Email" title="Email"><i data-icon="mail"></i></a>
     </p>
   </header>
 
-  <aside class="help" aria-label="Controls">
-    <span><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> walk</span>
-    <span><kbd>Enter</kbd> use</span>
-    <button id="sound-toggle" class="pixel-btn small" type="button" aria-pressed="false" title="Toggle sound">Sound off</button>
-  </aside>
-
   <nav class="weather-bar" aria-label="Weather outside the window">
-    <button class="pixel-btn weather" data-weather="sunny" type="button" aria-pressed="true"><i data-icon="sunny"></i>Sunny</button>
-    <button class="pixel-btn weather" data-weather="rain" type="button" aria-pressed="false"><i data-icon="rain"></i>Rain + Thunder</button>
-    <button class="pixel-btn weather" data-weather="snow" type="button" aria-pressed="false"><i data-icon="snow"></i>Snow</button>
-    <button class="pixel-btn weather" data-weather="autumn" type="button" aria-pressed="false"><i data-icon="autumn"></i>Autumn leaves</button>
-    <button class="pixel-btn weather" data-weather="night" type="button" aria-pressed="false"><i data-icon="night"></i>Night</button>
+    <button class="pixel-btn weather" data-weather="sunny" type="button" aria-pressed="true" aria-label="Sunny" title="Sunny"><i data-icon="sunny"></i></button>
+    <button class="pixel-btn weather" data-weather="rain" type="button" aria-pressed="false" aria-label="Rain + Thunder" title="Rain + Thunder"><i data-icon="rain"></i></button>
+    <button class="pixel-btn weather" data-weather="snow" type="button" aria-pressed="false" aria-label="Snow" title="Snow"><i data-icon="snow"></i></button>
+    <button class="pixel-btn weather" data-weather="autumn" type="button" aria-pressed="false" aria-label="Autumn leaves" title="Autumn leaves"><i data-icon="autumn"></i></button>
+    <button class="pixel-btn weather" data-weather="night" type="button" aria-pressed="false" aria-label="Night" title="Night"><i data-icon="night"></i></button>
+    <button id="sound-toggle" class="pixel-btn weather-sound" type="button" aria-pressed="false" aria-label="Toggle sound" title="Sound"><i data-icon="sound-off" class="ico-off"></i><i data-icon="sound-on" class="ico-on"></i></button>
   </nav>
 
   <div id="prompt" class="prompt" hidden></div>

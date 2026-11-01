@@ -42,16 +42,20 @@ button { font: inherit; color: inherit; cursor: pointer; }
 /* ---------- Title ---------- */
 .title-card {
   position: fixed;
-  top: 18px;
-  left: 20px;
+  top: 40%;
+  transform: translateY(-50%);
+  right: calc(100vw - var(--room-left, 240px));
+  text-align: right;
   pointer-events: none;
-  max-width: min(520px, 70vw);
+  max-width: calc(var(--room-left, 240px) - 14px);
+  overflow-wrap: anywhere;
+  --ink: var(--plum);
 }
 .pixel-title {
-  margin: 0;
+  margin: 5px;
   font-family: var(--pixel);
   font-weight: 400;
-  font-size: clamp(18px, 3.1vw, 34px);
+  font-size: clamp(16px, 2vw, 28px);
   line-height: 1.35;
   color: var(--yellow);
   letter-spacing: 0.04em;
@@ -68,8 +72,8 @@ body.touch .hint-keys { display: none; }
 .pixel-title span:last-child { animation: title-bob 2.4s steps(2, end) infinite; }
 @keyframes title-bob { 50% { transform: translateY(-3px); } }
 .subtitle {
-  margin: 14px 0 0;
-  font-size: 22px;
+  margin: 18px 6px 5px 5px;
+  font-size: 20px;
   line-height: 1.1;
   color: var(--plum);
   background: var(--cream);
@@ -77,6 +81,21 @@ body.touch .hint-keys { display: none; }
   padding: 4px 10px 5px;
   box-shadow: 0 0 0 var(--px) var(--plum), var(--px) var(--px) 0 var(--px) var(--plum);
 }
+.wip {
+  margin: 10px 5px 5px 5px;
+  font-family: var(--pixel);
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.4;
+}
+.links { margin: 12px 5px 5px 5px; display: flex; justify-content: flex-end; gap: 12px; color: var(--ink); }
+.links a { pointer-events: auto; opacity: 0.5; display: inline-flex; transition: opacity 150ms; color: inherit; }
+.links a:hover, .links a:focus-visible { opacity: 1; }
+.links i { width: 20px; height: 20px; display: inline-block; }
+.links svg { width: 100%; height: 100%; display: block; }
+body.dark-bg .title-card { --ink: var(--cream); }
 
 /* ---------- Pixel buttons ---------- */
 .pixel-btn {
@@ -110,43 +129,35 @@ body.touch .hint-keys { display: none; }
 /* ---------- Weather bar ---------- */
 .weather-bar {
   position: fixed;
-  left: 50%;
-  bottom: max(20px, env(safe-area-inset-bottom));
-  transform: translateX(-50%);
+  left: calc(var(--room-right, 90vw) + 12px);
+  top: var(--room-mid-y, 50%);
+  transform: translateY(-50%);
   display: flex;
-  gap: 14px;
-  padding: 14px 16px;
-  background: rgba(42, 31, 69, 0.18);
-  backdrop-filter: blur(2px);
-  max-width: calc(100vw - 24px);
-  overflow-x: auto;
-  scrollbar-width: none;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: rgba(42, 31, 69, 0.35);
+  backdrop-filter: blur(6px);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 246, 230, 0.12);
+  opacity: 0.55;
+  transition: opacity 200ms;
 }
-.weather-bar::-webkit-scrollbar { display: none; }
-
-/* ---------- Help ---------- */
-.help {
-  position: fixed;
-  top: 18px;
-  right: 20px;
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  font-size: 20px;
+.weather-bar:hover, .weather-bar:focus-within { opacity: 1; }
+.weather-bar .pixel-btn {
+  padding: 8px;
+  border-radius: 9px;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
 }
-.help > span { background: var(--cream); padding: 3px 8px 4px; box-shadow: 0 0 0 var(--px) var(--plum); }
-kbd {
-  font-family: var(--pixel);
-  font-size: 8px;
-  display: inline-block;
-  min-width: 18px;
-  padding: 4px 4px 3px;
-  margin-right: 3px;
-  text-align: center;
-  background: var(--lilac);
-  box-shadow: 0 2px 0 var(--plum);
-  vertical-align: 2px;
-}
+.weather-bar .pixel-btn:hover { background: rgba(255, 246, 230, 0.18); }
+.weather-bar .pixel-btn[aria-pressed="true"] { background: rgba(255, 216, 74, 0.9); box-shadow: none; transform: none; }
+.weather-bar .weather-sound { color: var(--cream); margin-top: 4px; border-top: 1px solid rgba(255, 246, 230, 0.15); border-radius: 0 0 9px 9px; padding-top: 12px; }
+.weather-sound .ico-on, .weather-sound[aria-pressed="true"] .ico-off { display: none; }
+.weather-sound[aria-pressed="true"] .ico-on { display: inline-block; }
+.weather-bar .weather-sound[aria-pressed="true"] { background: transparent; }
+.weather-bar .pixel-btn:active { transform: none; box-shadow: none; }
 
 /* ---------- Interaction prompt ---------- */
 .prompt {
@@ -341,29 +352,16 @@ body.touch .touch-controls {
 
 /* ---------- Responsive ---------- */
 @media (max-width: 760px) {
-  .title-card { top: 12px; left: 12px; max-width: calc(100vw - 120px); }
   .pixel-title { font-size: 15px; }
   .subtitle { font-size: 18px; margin-top: 10px; }
-  .help { top: 12px; right: 12px; }
-  .help > span { display: none; }
-  .weather-bar {
-    bottom: auto;
-    top: 118px;
-    left: 12px;
-    right: 12px;
-    transform: none;
-    max-width: none;
-    gap: 10px;
-    padding: 8px 10px;
-  }
-  .pixel-btn.weather { font-size: 8px; padding: 8px 9px; }
-  .pixel-btn.weather i { width: 16px; height: 16px; }
+  .weather-bar { left: auto; right: 8px; top: 200px; transform: none; padding: 5px; gap: 4px; }
+  .pixel-btn.weather { padding: 6px; }
+  .pixel-btn.weather i { width: 18px; height: 18px; }
   .dialogue { bottom: 180px; }
   .dialogue-text { font-size: 22px; }
   .term { width: calc(100vw - 40px); }
   .term-body { font-size: 19px; }
 }
-body.touch .help > span { display: none; }
 body.touch .dialogue { bottom: 180px; }
 
 @media (prefers-reduced-motion: reduce) {

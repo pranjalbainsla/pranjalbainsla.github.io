@@ -271,8 +271,8 @@ export function buildRoom(scene) {
   shelf.add(rbox(0.06, sh, slen, C.walnutDark, { r: 0.02, x: -4.95, y: sh / 2, z: szc }));
   const levels = [0.08, 0.85, 1.62, sh - 0.05];
   levels.forEach((y) => shelf.add(rbox(0.6, 0.09, slen, C.walnut, { r: 0.03, x: sx, y, z: szc })));
-  // Neutral spines: linen, oat, taupe, sage, kraft, warm grey
-  const bookColors = ['#efe6d6', '#d9c9ae', '#c2ab8c', '#a89580', '#8c7b6b', '#e3d5bf', '#b7b09c', '#9aa58e', '#cdbba0', '#6f5f52'];
+  // Spines: a few neutrals mixed with muted jewel tones
+  const bookColors = ['#efe6d6', '#c2ab8c', '#d9534a', '#e8a33d', '#3f8f6b', '#3a6fb0', '#8b5fb5', '#e07a9a', '#2f9aa0', '#8c7b6b', '#f2c94c', '#c0522d'];
   [levels[0], levels[1]].forEach((ly, li) => {
     let z = sz0 + 0.14;
     const end = li === 1 ? sz1 - 0.65 : sz1 - 0.14;
@@ -451,7 +451,6 @@ export function buildRoom(scene) {
   // ---------- Interactables ----------
   interactables.push(
     { id: 'monitor', label: 'Open projects', points: [[mx, -2.2], [mx - 0.5, -2.2]], anchor: new THREE.Vector3(mx, 2.35, mz) },
-    { id: 'notes', label: 'Read notes', points: [[0.55, -2.2]], anchor: new THREE.Vector3(0.65, 2.55, -3.9) },
     { id: 'mug', label: 'Coffee', points: [[1.6, -2.2]], anchor: new THREE.Vector3(mugX, 1.75, mugZ) },
     { id: 'window', label: 'Look outside', points: [[2.9, -3.45], [-3.0, -3.4], [-2.4, -3.4]], anchor: new THREE.Vector3(2.7, 3.2, -4.0) },
   );

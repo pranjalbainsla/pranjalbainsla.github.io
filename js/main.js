@@ -65,6 +65,22 @@ function resize() {
     composer.setSize(w, h);
   }
   pixelsPerUnit = (h * renderer.getPixelRatio()) / viewH;
+  layoutChrome();
+}
+
+// Pin the HUD to the room's on-screen edges (left wall corner, back-right wall end).
+const _e = new THREE.Vector3();
+function edgeToScreen(x, y, z) {
+  _e.set(x, y, z).project(camera);
+  return { x: (_e.x * 0.5 + 0.5) * window.innerWidth, y: (-_e.y * 0.5 + 0.5) * window.innerHeight };
+}
+function layoutChrome() {
+  const left = edgeToScreen(-5.3, 3, 4.1);
+  const right = edgeToScreen(5.0, 2.8, -4.3);
+  const root = document.documentElement.style;
+  root.setProperty('--room-left', `${Math.max(12, left.x)}px`);
+  root.setProperty('--room-right', `${right.x}px`);
+  root.setProperty('--room-mid-y', `${right.y}px`);
 }
 
 // ---------- Lights ----------
@@ -169,7 +185,6 @@ function setWeather(name) {
 const soundBtn = document.getElementById('sound-toggle');
 soundBtn.addEventListener('click', () => {
   const on = sound.toggle();
-  soundBtn.textContent = on ? 'Sound on' : 'Sound off';
   soundBtn.setAttribute('aria-pressed', String(on));
 });
 
@@ -209,11 +224,6 @@ const mugLines = [
   'Coffee: the original performance optimization.',
   'The mug says "it works on my machine". It is right.',
 ];
-const noteLines = [
-  'Note 1: profile before you optimize.',
-  'Note 2: read the paper, then read the code, then read the paper again.',
-  'Note 3: ship the portfolio. (You are standing in it.)',
-];
 let mugIdx = 0;
 
 function act() {
@@ -224,9 +234,6 @@ function act() {
   switch (nearby.id) {
     case 'monitor':
       terminals.openProjects(projects, projectsError);
-      break;
-    case 'notes':
-      dialogue.show('Sticky notes', noteLines);
       break;
     case 'mug':
       dialogue.show('Coffee mug', mugLines[mugIdx++ % mugLines.length]);
@@ -418,7 +425,7 @@ function frame(now = performance.now()) {
     }
   }
   placePrompt();
-  if (((t * 4) | 0) !== lastBg) { lastBg = (t * 4) | 0; document.body.style.background = `#${scene.background.getHexString()}`; }
+  if (((t * 4) | 0) !== lastBg) { lastBg = (t * 4) | 0; document.body.style.background = `#${scene.background.getHexString()}`; document.body.classList.toggle('dark-bg', scene.background.r * 0.3 + scene.background.g * 0.6 + scene.background.b * 0.1 < 0.35); }
 
   if (!started) {
     started = true;

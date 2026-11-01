@@ -6,8 +6,12 @@ const ICONS = {
   snow: ['....b....', '.b..b..b.', '..b.b.b..', '...bbb...', 'bbbbbbbbb', '...bbb...', '..b.b.b..', '.b..b..b.', '....b....'],
   autumn: ['.....oo..', '...ooooo.', '..oorooo.', '.oooroo..', '.ooroooo.', '.oroooo..', '.rooo....', 'r........', 's........'],
   night: ['...mmm..w', '..mm.....', '.mm....w.', '.mm......', '.mm......', '.mmm...m.', '..mmmmmm.', '...mmmm..', 'w........'],
+  'sound-on': ['....c....', '...cc..c.', 'ccccc.c.c', 'ccccc..cc', 'ccccc.c.c', '...cc..c.', '....c....', '.........', '.........'],
+  'sound-off': ['....c....', '...cc....', 'ccccc.c.c', 'ccccc..c.', 'ccccc.c.c', '...cc....', '....c....', '.........', '.........'],
+  mail: ['.........', 'ccccccccc', 'cc.....cc', 'c.c...c.c', 'c..c.c..c', 'c...c...c', 'c.......c', 'ccccccccc', '.........'],
+  github: ['.c.....c.', '.ccccccc.', 'ccccccccc', 'cc.ccc.cc', 'ccccccccc', '.ccccccc.', '..ccccc..', '.c.c.c.c.', '.........'],
 };
-const ICON_COLORS = { y: '#ffd84a', o: '#ffb547', g: '#9aa6bd', b: '#5fa8e8', r: '#ff5a4a', s: '#7a4a2b', m: '#ffd84a', w: '#c9b8e8' };
+const ICON_COLORS = { c: 'currentColor', y: '#ffd84a', o: '#ffb547', g: '#9aa6bd', b: '#5fa8e8', r: '#ff5a4a', s: '#7a4a2b', m: '#ffd84a', w: '#c9b8e8' };
 
 export function drawIcons() {
   document.querySelectorAll('[data-icon]').forEach((el) => {
