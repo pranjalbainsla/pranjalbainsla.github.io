@@ -312,6 +312,18 @@ export function buildRoom(scene) {
   const dm = new THREE.Mesh(new THREE.TubeGeometry(dangle, 20, 0.022, 5), mat('#3fbf6f'));
   dm.castShadow = true;
   shelf.add(dm);
+  // an envelope leaning against the middle-shelf books: the hint that the shelf does something
+  const env = new THREE.Group();
+  env.add(rbox(0.025, 0.24, 0.36, C.kraft, { r: 0.008, y: 0.12 }));
+  [-1, 1].forEach((s) => {
+    const fold = rbox(0.006, 0.02, 0.222, C.kraftDark, { r: 0.003, x: 0.014, y: 0.175, z: s * 0.09, shadow: false });
+    fold.rotation.x = -s * 0.625;
+    env.add(fold);
+  });
+  env.add(rbox(0.02, 0.06, 0.06, C.wax, { r: 0.01, x: 0.016, y: 0.115, shadow: false }));
+  env.position.set(sx + 0.27, levels[1] + 0.045, -2.85);
+  env.rotation.z = 0.15;
+  shelf.add(env);
   // potted plant on top
   shelf.add(rbox(0.3, 0.28, 0.3, C.tomato, { r: 0.05, x: sx, y: sh + 0.14, z: szc }));
   for (let i = 0; i < 5; i++) {
@@ -453,6 +465,7 @@ export function buildRoom(scene) {
     { id: 'monitor', label: 'Open projects', points: [[mx, -2.2], [mx - 0.5, -2.2]], anchor: new THREE.Vector3(mx, 2.35, mz) },
     { id: 'mug', label: 'Coffee', points: [[1.6, -2.2]], anchor: new THREE.Vector3(mugX, 1.75, mugZ) },
     { id: 'window', label: 'Look outside', points: [[2.9, -3.45], [-3.0, -3.4], [-2.4, -3.4]], anchor: new THREE.Vector3(2.7, 3.2, -4.0) },
+    { id: 'bookshelf', label: 'Bored? Pull a card', points: [[-3.95, -3.15], [-3.95, -2.7], [-3.95, -2.2]], anchor: new THREE.Vector3(sx + 0.3, levels[2], szc) },
   );
 
   return { room, colliders, interactables, refs };

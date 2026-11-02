@@ -8,6 +8,15 @@
   --green: #39ff7a;
   --amber: #ffb547;
   --tomato: #ff5a4a;
+  /* postcard: also used by the sprite palette in ui.js and the 3D envelope in helpers.js */
+  --kraft: #d8a663;
+  --kraft-dark: #a8743a;
+  --wax: #a3222a;
+  --wax-dark: #6e141b;
+  --stamp-blue: #3a6fb0;
+  --stamp-green: #3f8f6b;
+  --postmark: #6f6a73;
+  --ink: #33190c;
   --px: 3px; /* one "pixel" for the pixel-art chrome */
   --pixel: "Press Start 2P", "Courier New", monospace;
   --mono: "VT323", "Courier New", monospace;
@@ -287,6 +296,132 @@ body.dark-bg .title-card { --ink: var(--cream); }
 .cursor { animation: blink 0.8s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 
+/* ---------- Postcard (bookshelf) ----------
+   Sizes are whole multiples of --px so every sprite pixel and border step stays crisp.
+   Narrow screens change --px instead of scaling. */
+.pc-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  padding: 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: rgba(42, 31, 69, 0.55);
+  --cell: var(--px); /* size of one sprite pixel */
+  /* 4x4 dither grain, and the dotted rules (colour = walnut) */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4' shape-rendering='crispEdges'%3E%3Crect x='1' width='1' height='1' fill='%237a4a2b' fill-opacity='.14'/%3E%3Crect x='3' y='2' width='1' height='1' fill='%237a4a2b' fill-opacity='.14'/%3E%3Crect y='3' width='1' height='1' fill='%23fff6e6' fill-opacity='.2'/%3E%3C/svg%3E");
+  --rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 10' shape-rendering='crispEdges'%3E%3Crect y='9' width='1' height='1' fill='%237a4a2b'/%3E%3C/svg%3E");
+  --dots-v: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 2' shape-rendering='crispEdges'%3E%3Crect width='1' height='1' fill='%237a4a2b'/%3E%3C/svg%3E");
+  --dots-h: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 1' shape-rendering='crispEdges'%3E%3Crect width='1' height='1' fill='%237a4a2b'/%3E%3C/svg%3E");
+}
+.pc-layer[hidden] { display: none; }
+.pc-layer [data-icon] { display: block; flex: none; width: calc(var(--w) * var(--cell)); height: calc(var(--h) * var(--cell)); }
+.pc-layer [data-icon] svg { width: 100%; height: 100%; display: block; }
+body.touch.postcard-open .touch-controls { display: none; }
+
+.pc-stage { position: relative; margin: auto; width: min(calc(var(--px) * 192), 100%); }
+
+/* Envelope frames (24x16 sprites). Paint order: back+flap, card, front pocket, sealed. */
+.pc-layer .pc-env {
+  --cell: calc(var(--px) * 8);
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  margin-left: calc(var(--cell) * -12);
+  pointer-events: none;
+}
+.pc-layer.is-sealed .pc-env-closed,
+.pc-layer.is-open .pc-env-back,
+.pc-layer.is-open .pc-env-pocket { display: block; }
+
+.postcard {
+  position: relative;
+  color: var(--ink);
+  filter: drop-shadow(calc(var(--px) * 3) calc(var(--px) * 3) 0 rgba(42, 31, 69, 0.45));
+}
+.pc-slide { position: relative; }
+.pc-close { position: absolute; top: calc(var(--px) * -4); right: calc(var(--px) * -4); }
+.pc-slide.is-tucked { transform: translateY(100%); clip-path: inset(0 0 100% 0); }
+/* Plum outline + kraft paper, both notched so the corners look worn (2 steps TL/BR, 1 step TR/BL). */
+.pc-frame {
+  background: var(--plum);
+  padding: var(--px);
+  clip-path: polygon(
+    0 calc(var(--px) * 2), var(--px) calc(var(--px) * 2), var(--px) var(--px), calc(var(--px) * 2) var(--px), calc(var(--px) * 2) 0,
+    calc(100% - var(--px)) 0, calc(100% - var(--px)) var(--px), 100% var(--px),
+    100% calc(100% - var(--px) * 2), calc(100% - var(--px)) calc(100% - var(--px) * 2), calc(100% - var(--px)) calc(100% - var(--px)),
+    calc(100% - var(--px) * 2) calc(100% - var(--px)), calc(100% - var(--px) * 2) 100%,
+    var(--px) 100%, var(--px) calc(100% - var(--px)), 0 calc(100% - var(--px)));
+}
+.pc-paper {
+  display: grid;
+  grid-template-columns: 1fr var(--px) 1fr;
+  grid-template-areas: "msg div addr" "foot foot foot";
+  column-gap: calc(var(--px) * 5);
+  row-gap: calc(var(--px) * 3);
+  padding: calc(var(--px) * 6) calc(var(--px) * 6) calc(var(--px) * 4);
+  background: var(--kraft) var(--grain);
+  background-size: calc(var(--px) * 4) calc(var(--px) * 4);
+  box-shadow: inset 0 0 0 var(--px) var(--kraft-dark);
+  clip-path: polygon(
+    0 var(--px), var(--px) var(--px), var(--px) 0, 100% 0,
+    100% calc(100% - var(--px)), calc(100% - var(--px)) calc(100% - var(--px)), calc(100% - var(--px)) 100%, 0 100%);
+}
+
+/* Left half: the message, on a cream inner card */
+.pc-message {
+  grid-area: msg;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: var(--px);
+  padding: calc(var(--px) * 4);
+  background: var(--cream);
+  box-shadow: 0 0 0 var(--px) var(--kraft-dark);
+}
+.pc-note { margin: 0; font-size: 24px; line-height: 1.05; overflow-wrap: anywhere; }
+.pc-sign {
+  margin: calc(var(--px) * 4) 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: calc(var(--px) * 3);
+  font-size: 24px;
+}
+.pc-divider { grid-area: div; background: var(--dots-v) repeat-y; background-size: var(--px) calc(var(--px) * 2); }
+
+/* Right half: stamps, postmark, address lines, actions */
+.pc-address { grid-area: addr; display: flex; flex-direction: column; gap: calc(var(--px) * 2); min-width: 0; }
+.pc-stamps { position: relative; display: flex; justify-content: flex-end; gap: calc(var(--cell) * 2); margin-bottom: calc(var(--px) * 3); }
+.pc-postmark { position: absolute; top: calc(var(--cell) * 2); right: calc(var(--cell) * 22); } /* waves cross the green stamp, ring stays on paper */
+.pc-date {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--cell) * 14);
+  height: calc(var(--cell) * 14);
+  display: grid;
+  place-content: center;
+  text-align: center;
+  font-family: var(--pixel);
+  font-size: 8px;
+  line-height: 1.25;
+}
+.pc-title, .pc-from {
+  margin: 0;
+  line-height: calc(var(--px) * 10);
+  background: var(--rule);
+  background-size: calc(var(--px) * 2) calc(var(--px) * 10);
+  overflow-wrap: anywhere;
+}
+.pc-title { font-family: var(--pixel); font-weight: 400; font-size: 10px; }
+.pc-from { font-size: 24px; }
+.pc-actions { display: flex; flex-wrap: wrap; gap: calc(var(--px) * 4); margin-top: auto; padding: calc(var(--px) * 3) var(--px) var(--px); }
+.pc-actions .pixel-btn { color: var(--plum); text-decoration: none; }
+.pc-foot { grid-area: foot; margin: 0; font-family: var(--pixel); font-size: 8px; line-height: 1.4; text-align: center; }
+
 /* ---------- Touch controls ---------- */
 .touch-controls { display: none; }
 body.touch .touch-controls {
@@ -363,6 +498,17 @@ body.touch .touch-controls {
   .term-body { font-size: 19px; }
 }
 body.touch .dialogue { bottom: 180px; }
+
+/* Postcard on phones: smaller pixels, address side stacked on top of the message */
+@media (max-width: 640px) {
+  .pc-layer { --px: 2px; }
+  .pc-layer .pc-env { --cell: calc(var(--px) * 7); }
+  .pc-stamps { --cell: 3px; } /* keeps the date inside the postmark legible */
+  .pc-paper { grid-template-columns: 1fr; grid-template-areas: "addr" "div" "msg" "foot"; row-gap: calc(var(--px) * 5); }
+  .pc-divider { height: var(--px); background: var(--dots-h) repeat-x; background-size: calc(var(--px) * 2) var(--px); }
+  .pc-note, .pc-sign { font-size: 22px; }
+  .pc-from { font-size: 20px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .pixel-title span:last-child, .prompt, .dialogue-next { animation: none; }

@@ -9,7 +9,7 @@ import { buildRoom } from './room.js';
 import { Character } from './character.js';
 import { Weather, WEATHER_LINES } from './weather.js';
 import { Sound } from './audio.js';
-import { drawIcons, Dialogue, Terminals, setupTouch } from './ui.js';
+import { drawIcons, Dialogue, Terminals, Postcard, setupTouch } from './ui.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const isTouch = window.matchMedia('(pointer: coarse)').matches;
@@ -159,6 +159,7 @@ const BOUNDS = [-4.95, 4.9, -3.95, 3.95];
 drawIcons();
 const dialogue = new Dialogue(sound);
 const terminals = new Terminals(sound);
+const postcard = new Postcard(sound);
 const promptEl = document.getElementById('prompt');
 
 let projects = [];
@@ -168,6 +169,25 @@ fetch('./projects.json', { cache: 'no-cache' })
   .then((data) => { projects = Array.isArray(data) ? data : data.projects || []; })
   .catch((e) => { projectsError = e; console.warn('projects.json:', e); })
   .finally(drawScreen);
+
+// Bookshelf postcards. Only title + url are required; `from` falls back to the link's hostname.
+let recommendations = [];
+let recsState = 'loading';
+fetch('./recommendations.json', { cache: 'no-cache' })
+  .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+  .then((data) => {
+    const list = Array.isArray(data) ? data : data.recommendations || [];
+    const host = (u) => { try { return /^https?:$/.test(new URL(u).protocol) && new URL(u).hostname; } catch { return ''; } };
+    recommendations = list.filter((r) => r?.title && host(r.url)).map((r) => ({
+      title: String(r.title),
+      url: r.url,
+      note: r.note ? String(r.note) : '',
+      from: r.from ? String(r.from) : host(r.url).replace(/^www\./, ''),
+    }));
+    if (recommendations.length < list.length) console.warn(`recommendations.json: skipped ${list.length - recommendations.length} entries without a title or http(s) url`);
+    recsState = 'ok';
+  })
+  .catch((e) => { recsState = 'error'; console.warn('recommendations.json:', e); });
 
 document.querySelectorAll('.weather').forEach((btn) => {
   btn.addEventListener('click', (e) => {
@@ -193,6 +213,7 @@ const input = { up: false, down: false, left: false, right: false };
 const KEYMAP = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', KeyW: 'up', KeyS: 'down', KeyA: 'left', KeyD: 'right' };
 
 window.addEventListener('keydown', (e) => {
+  if (postcard.open) return postcard.key(e); // modal: no walking, no act()
   const dir = KEYMAP[e.code];
   if (dir) {
     if (e.code.startsWith('Arrow')) e.preventDefault();
@@ -227,6 +248,7 @@ const mugLines = [
 let mugIdx = 0;
 
 function act() {
+  if (postcard.open) return;
   if (dialogue.open) return dialogue.advance();
   if (!nearby) return;
   const [px, , pz] = nearby.anchor.toArray();
@@ -240,6 +262,13 @@ function act() {
       break;
     case 'window':
       dialogue.show('Window', WEATHER_LINES[weather.name]);
+      break;
+    case 'bookshelf':
+      if (recommendations.length) postcard.show(recommendations);
+      else dialogue.show('Bookshelf', {
+        loading: 'Still digging through the drawer. Try again in a sec.',
+        error: "The drawer's stuck. Check back later.",
+      }[recsState] || "The drawer's empty for now. Check back later.");
       break;
   }
 }
@@ -257,7 +286,7 @@ function findNearby() {
 
 const _p = new THREE.Vector3();
 function placePrompt() {
-  if (!nearby || dialogue.open) {
+  if (!nearby || dialogue.open || postcard.open) {
     promptEl.hidden = true;
     return;
   }
@@ -387,7 +416,7 @@ function frame(now = performance.now()) {
   const iy = (input.up ? 1 : 0) - (input.down ? 1 : 0);
   const ix = (input.right ? 1 : 0) - (input.left ? 1 : 0);
   move.set(0, 0);
-  if (!dialogue.open) move.addScaledVector(FWD, iy).addScaledVector(RIGHT, ix);
+  if (!dialogue.open && !postcard.open) move.addScaledVector(FWD, iy).addScaledVector(RIGHT, ix);
   if (move.lengthSq() > 1) move.normalize();
   player.update(dt, move, room.colliders, BOUNDS, t);
 

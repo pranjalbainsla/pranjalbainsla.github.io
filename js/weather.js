@@ -391,9 +391,9 @@ function stepPoints(p, dt, t, amt, ppu, { fall, sway, twinkle }) {
 }
 
 export const WEATHER_LINES = {
-  sunny: ['Golden light all afternoon. The dust motes are doing their slow little dance again.'],
-  rain: ['Rain on the glass and thunder somewhere over the hills. Perfect weather to debug something.'],
-  snow: ['The frost is creeping in from the corners. I am not leaving this room until spring.'],
-  autumn: ['Orange leaves keep drifting past the window. Very cinematic for someone reading CUDA docs.'],
-  night: ['Just the stars and the hum of the CRT. Peak focus hours.'],
+  sunny: ['what a bright and sunny day! (trust me, I am going to add better lines here soon)'],
+  rain: ['fav weather hands down. (the UI could use a bit of work though, I am working on it)'],
+  snow: ['hey, it\'s snowing! (better lines coming soon, I promise)'],
+  autumn: ['hmm nice'],
+  night: ['hmm, it\'s late. Let me pack up?'],
 };

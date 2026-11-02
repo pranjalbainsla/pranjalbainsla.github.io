@@ -21,6 +21,9 @@ export const C = {
   amber: '#ffb547',
   tomato: '#ff5a4a',
   yellow: '#ffd84a',
+  kraft: '#d8a663', // same as --kraft / --kraft-dark / --wax in style.css
+  kraftDark: '#a8743a',
+  wax: '#a3222a',
 };
 
 // Wood colours get a painted grain instead of a flat fill. value = [grain contrast, plank seam]

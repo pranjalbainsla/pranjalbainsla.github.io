@@ -60,6 +60,42 @@
 
   <div id="terminals" class="terminals" aria-live="polite"></div>
 
+  <div id="postcard" class="pc-layer" hidden>
+    <div class="pc-stage">
+      <i class="pc-env pc-env-back" data-icon="envelope-open"></i>
+      <article class="postcard" role="dialog" aria-modal="true" aria-labelledby="pc-title" aria-describedby="pc-note">
+        <div class="pc-slide">
+          <div class="pc-frame">
+            <div class="pc-paper">
+              <div class="pc-message">
+                <p class="pc-note" id="pc-note"></p>
+                <p class="pc-sign">— P. <i class="pc-seal" data-icon="seal"></i></p>
+              </div>
+              <div class="pc-divider" aria-hidden="true"></div>
+              <div class="pc-address">
+                <div class="pc-stamps">
+                  <i data-icon="stamp-green"></i>
+                  <i data-icon="stamp-blue"></i>
+                  <div class="pc-postmark"><i data-icon="postmark"></i><time class="pc-date" id="pc-date"></time></div>
+                </div>
+                <h2 class="pc-title" id="pc-title" aria-live="polite"></h2>
+                <p class="pc-from" id="pc-from"></p>
+                <div class="pc-actions">
+                  <a id="pc-visit" class="pixel-btn" href="#" target="_blank" rel="noopener">VISIT <i data-icon="arrow"></i></a>
+                  <button id="pc-again" class="pixel-btn" type="button" aria-keyshortcuts="R">ANOTHER <i data-icon="again"></i></button>
+                </div>
+              </div>
+              <p class="pc-foot" id="pc-count"></p>
+            </div>
+          </div>
+          <button id="pc-close" class="pixel-btn small pc-close" type="button" aria-label="Close postcard" aria-keyshortcuts="Escape"><i data-icon="close"></i></button>
+        </div>
+      </article>
+      <i class="pc-env pc-env-pocket" data-icon="envelope-pocket"></i>
+      <i class="pc-env pc-env-closed" data-icon="envelope-closed"></i>
+    </div>
+  </div>
+
   <div class="touch-controls" id="touch-controls" aria-hidden="true">
     <div class="dpad">
       <button data-dir="up" class="pad up" type="button">▲</button>
